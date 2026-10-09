@@ -23,13 +23,13 @@ def _config_payload(config):
 
 
 @contextmanager
-def _atomic_text(path):
-    """Do not replace an existing export until the complete write succeeds."""
+def _atomic_file(path, mode, **options):
+    """Replace only a completed export, after closing its file on Windows too."""
     path = Path(path)
     temporary = None
     try:
-        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", newline="",
-                                         dir=path.parent, delete=False) as handle:
+        with tempfile.NamedTemporaryFile(mode=mode, dir=path.parent,
+                                         delete=False, **options) as handle:
             temporary = Path(handle.name)
             yield handle
         os.replace(temporary, path)
@@ -41,7 +41,7 @@ def _atomic_text(path):
 def save_settings(config, path):
     validate_config(config)
     payload = {"schema_version": 1, "data_kind": DATA_KIND, "config": _config_payload(config)}
-    with _atomic_text(path) as handle:
+    with _atomic_file(path, "w", encoding="utf-8", newline="") as handle:
         json.dump(payload, handle, indent=2, ensure_ascii=False, allow_nan=False)
         handle.write("\n")
     return Path(path)
@@ -87,7 +87,7 @@ def load_settings(path):
 
 def export_csv(result, path):
     """CSV comments carry metadata; skip lines beginning with # when importing."""
-    with _atomic_text(path) as handle:
+    with _atomic_file(path, "w", encoding="utf-8", newline="") as handle:
         handle.write("# data_kind=" + DATA_KIND + "\n")
         handle.write("# voltage_amplitudes=peak; phase=degrees; no_hardware_connected\n")
         handle.write("# config=" + json.dumps(_config_payload(result.config), allow_nan=False) + "\n")
@@ -116,8 +116,11 @@ def export_figure(result, path):
     if path.suffix.lower() != ".png":
         raise ValueError("Figure export requires a .png filename")
     figure = build_figure(result)
-    FigureCanvasAgg(figure)
-    figure.savefig(path, dpi=140, format="png", facecolor=figure.get_facecolor(),
-                   metadata={"Description": "Synthetic simulation data. No hardware connected."})
-    figure.clear()
+    try:
+        FigureCanvasAgg(figure)
+        with _atomic_file(path, "w+b") as handle:
+            figure.savefig(handle, dpi=140, format="png", facecolor=figure.get_facecolor(),
+                           metadata={"Description": "Synthetic simulation data. No hardware connected."})
+    finally:
+        figure.clear()
     return path

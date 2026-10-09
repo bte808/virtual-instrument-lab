@@ -1,7 +1,9 @@
 """Numerical regression tests against closed-form, independent expectations."""
 
 from dataclasses import replace
+from fractions import Fraction
 import math
+import warnings
 
 import numpy as np
 import pytest
@@ -94,6 +96,21 @@ def test_fft_odd_final_bin_is_doubled():
     frequencies, amplitude = single_sided_spectrum(values, 1000.0)
     assert frequencies[-1] < 500.0
     assert amplitude[-1] == pytest.approx(1.75, abs=1e-14)
+
+
+def test_fft_large_finite_dc_does_not_overflow_intermediate_sum():
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        _, amplitude = single_sided_spectrum(np.full(16, 1e308), 1000.0)
+    assert amplitude[0] == pytest.approx(1e308)
+    np.testing.assert_array_equal(amplitude[1:], np.zeros(8))
+
+
+def test_fft_rejects_amplitude_that_cannot_be_represented():
+    # A square wave's fundamental peak exceeds its time-domain peak.
+    values = np.sign(np.cos(2 * np.pi * np.arange(16) / 16)) * np.finfo(float).max
+    with pytest.raises(ValueError, match="floating-point range"):
+        single_sided_spectrum(values, 1000.0)
 
 
 def test_rc_step_and_two_stage_startup_match_closed_form():
@@ -239,3 +256,30 @@ def test_all_three_presets_produce_finite_settled_results():
         for values in (result.input_v, result.filtered_v, result.x_v, result.y_v, result.amplitude_v):
             assert np.all(np.isfinite(values))
         assert result.estimate_phase_deg is not None
+
+
+@pytest.mark.parametrize("scalar_type", [np.int16, np.float16])
+def test_accepted_narrow_scalars_do_not_overflow_sample_count(scalar_type):
+    config = replace(PRESETS["Clean reference"],
+                     sample_rate_hz=scalar_type(2000), duration_s=scalar_type(40))
+    validate_config(config)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        result = simulate(config)
+    assert len(result.time_s) == 80000
+    assert result.time_s[-1] == pytest.approx(39.9995)
+    assert result.estimate_phase_deg == pytest.approx(30.0, abs=0.001)
+
+
+def test_accepted_fraction_scalars_use_numeric_arrays():
+    config = replace(PRESETS["Clean reference"], sample_rate_hz=Fraction(2000),
+                     amplitude_v=Fraction(1, 2), phase_deg=Fraction(30),
+                     duration_s=Fraction(4), seed=np.uint32(42))
+    validate_config(config)
+    result = simulate(config)
+    assert result.time_s.dtype == np.float64
+    assert result.input_v.dtype == np.float64
+    assert result.estimate_amplitude_v == pytest.approx(0.5, abs=3e-5)
+    assert result.estimate_phase_deg == pytest.approx(30.0, abs=0.001)
+    assert isinstance(result.config.sample_rate_hz, float)
+    assert isinstance(result.config.seed, int)

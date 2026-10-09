@@ -4,6 +4,7 @@ import struct
 import subprocess
 import sys
 from dataclasses import asdict, replace
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -76,12 +77,81 @@ def test_zero_phase_csv_is_blank(tmp_path):
 
 
 def test_png_is_real_image_and_contains_provenance(result, tmp_path):
-    path = export_figure(result, tmp_path / "plot.png")
+    path = tmp_path / "plot ü 中文.PNG"
+    path.write_bytes(b"previous image")
+    assert export_figure(result, path) == path
     content = path.read_bytes()
     assert content.startswith(b"\x89PNG\r\n\x1a\n")
     width, height = struct.unpack(">II", content[16:24])
     assert width >= 1000 and height >= 800
     assert b"Synthetic simulation data" in content
+    assert list(tmp_path.iterdir()) == [path]
+
+
+@pytest.mark.parametrize("existing", [False, True])
+def test_failed_png_write_preserves_destination_and_clears_figure(result, tmp_path, monkeypatch, existing):
+    from matplotlib.figure import Figure
+    from virtual_instrument_lab import plotting
+
+    path = tmp_path / "plot.png"
+    if existing:
+        path.write_bytes(b"previous image")
+    figure = Figure()
+    figure.subplots()
+    monkeypatch.setattr(plotting, "build_figure", lambda _result: figure)
+
+    def fail_write(destination, **_kwargs):
+        # Fail after bytes were written, as an interrupted/disk-full write can.
+        if hasattr(destination, "write"):
+            destination.write(b"partial image")
+        else:
+            Path(destination).write_bytes(b"partial image")
+        raise OSError("simulated PNG write failure")
+
+    monkeypatch.setattr(figure, "savefig", fail_write)
+    with pytest.raises(OSError, match="simulated PNG write failure"):
+        export_figure(result, path)
+    if existing:
+        assert path.read_bytes() == b"previous image"
+    else:
+        assert not path.exists()
+    assert list(tmp_path.iterdir()) == ([path] if existing else [])
+    assert figure.axes == []
+
+
+@pytest.mark.parametrize("kind", ["csv", "json", "png"])
+def test_failed_replacement_preserves_existing_export_and_removes_temp(result, tmp_path, monkeypatch, kind):
+    from virtual_instrument_lab import exports
+
+    path = tmp_path / ("existing." + kind)
+    path.write_bytes(b"previous export")
+    original_temporary_file = exports.tempfile.NamedTemporaryFile
+    temporary_handles = []
+
+    def track_temporary_file(*args, **kwargs):
+        handle = original_temporary_file(*args, **kwargs)
+        temporary_handles.append(handle)
+        return handle
+
+    def fail_replace(source, destination):
+        assert Path(source).parent == path.parent
+        assert Path(source).stat().st_size > 0
+        assert Path(destination) == path
+        # An open temporary file cannot be renamed on Windows.
+        assert temporary_handles and all(handle.closed for handle in temporary_handles)
+        raise PermissionError("simulated destination is locked")
+
+    monkeypatch.setattr(exports.tempfile, "NamedTemporaryFile", track_temporary_file)
+    monkeypatch.setattr(exports.os, "replace", fail_replace)
+    with pytest.raises(PermissionError, match="simulated destination is locked"):
+        if kind == "json":
+            save_settings(result.config, path)
+        elif kind == "csv":
+            export_csv(result, path)
+        else:
+            export_figure(result, path)
+    assert path.read_bytes() == b"previous export"
+    assert list(tmp_path.iterdir()) == [path]
 
 
 @pytest.mark.parametrize("mutation", [

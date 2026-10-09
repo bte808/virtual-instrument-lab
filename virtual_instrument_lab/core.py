@@ -194,11 +194,19 @@ def single_sided_spectrum(values: np.ndarray,
     data = _real_vector(values)
     rate = _sample_rate(sample_rate_hz)
     size = data.size
-    spectrum = np.abs(np.fft.rfft(data)) / size
+    # Scale exceptionally large finite inputs before the transform: dividing
+    # afterward cannot repair overflow in the FFT's intermediate sums.
+    peak = float(np.max(np.abs(data)))
+    scale = peak if peak > np.finfo(float).max / size else 1.0
+    spectrum = np.abs(np.fft.rfft(data / scale if scale != 1.0 else data)) / size
     if size % 2 == 0:
         spectrum[1:-1] *= 2.0
     else:
         spectrum[1:] *= 2.0
+    with np.errstate(over="ignore"):
+        spectrum *= scale
+    if not np.all(np.isfinite(spectrum)):
+        raise ValueError("Spectrum amplitude exceeds the finite floating-point range.")
     return np.fft.rfftfreq(size, d=1.0 / rate), spectrum
 
 
@@ -211,6 +219,14 @@ def simulate(config: SimulationConfig) -> SimulationResult:
     numerical zero threshold is not a noise-based confidence test.
     """
     validate_config(config)
+    # Validation accepts Real scalars (including NumPy integers and Fraction).
+    # Use the same native-float arithmetic that was validated, rather than
+    # allowing narrow NumPy multiplication to overflow or object-dtype arrays.
+    config = SimulationConfig(**{
+        field.name: (int(getattr(config, field.name)) if field.name == "seed"
+                     else float(getattr(config, field.name)))
+        for field in fields(config)
+    })
     sample_count = round(config.sample_rate_hz * config.duration_s)
     time_s = np.arange(sample_count, dtype=float) / config.sample_rate_hz
     clean_v = (config.amplitude_v * np.cos(

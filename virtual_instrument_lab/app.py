@@ -71,7 +71,7 @@ _FIELD_LABELS = {
 class LabApp:
     """A synchronous Tk interface; numerical work lives in :mod:`core`."""
 
-    def __init__(self, root: tk.Tk) -> None:
+    def __init__(self, root: tk.Tk, preset_name: Optional[str] = None) -> None:
         self.root = root
         self.result = None
         self._figure = None
@@ -81,7 +81,9 @@ class LabApp:
             name: tk.StringVar(root, value=str(value))
             for name, value in asdict(SimulationConfig()).items()
         }
-        self.preset_var = tk.StringVar(root, value=next(iter(PRESETS)))
+        self.preset_var = tk.StringVar(
+            root, value=preset_name if preset_name is not None else next(iter(PRESETS))
+        )
         self.status_var = tk.StringVar(root, value="Ready to simulate.")
         self.amplitude_var = tk.StringVar(root, value="—")
         self.phase_var = tk.StringVar(root, value="—")
@@ -593,9 +595,9 @@ def run_smoke_test() -> dict:
         root.destroy()
 
 
-def main() -> None:
+def main(preset_name: Optional[str] = None) -> None:
     root = tk.Tk()
-    LabApp(root)
+    LabApp(root, preset_name=preset_name)
     root.mainloop()
 
 

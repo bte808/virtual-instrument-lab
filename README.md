@@ -16,7 +16,13 @@
 - 三组教学预设，以及 CSV、JSON 设置、PNG 图像导出。
 - Tkinter 图形界面与独立 NumPy/SciPy 数值核心；也可无界面批量导出。
 
-## 安装与启动
+## 便携包与源码安装
+
+项目提供源码启动方式，并配置了分别在 Windows x64 与 macOS arm64 上构建便携包的流程。成功的 [Actions](https://github.com/bte808/virtual-instrument-lab/actions) 构建可提供 `portable-windows-x64` 和 `portable-macos-arm64` artifacts；便携包自带 Python，无需另行安装。下载与校验、启动方法、签名状态和本机构建步骤见 [便携包说明](docs/portable.md)。这些是保留 14 天的 Actions artifacts，需要登录 GitHub 下载，不是 GitHub Release。
+
+**便携包的构建和自测结果以对应提交的 Actions 记录及包内元数据为准。** Windows 包未使用发布者证书签名；macOS 包仅有 ad-hoc 签名，没有 Developer ID 签名或公证。若系统阻止运行，请使用审阅后的源码安装方式。
+
+### 源码环境
 
 建议使用 **Python 3.11 或 3.12，带 Tk 8.6 或更新版本**。源码要求 Python ≥ 3.9；自动化测试矩阵覆盖 Python 3.11/3.12。先安装现代 CPython 与 Git，或下载仓库 ZIP 后在解压目录运行对应命令。每个项目使用自己的 `.venv`。
 
@@ -103,9 +109,11 @@ tests/           # 数值、导出与界面基本流程检查
 docs/            # 教学实验与实现约定
 ```
 
-不包含硬件驱动、云端服务或预编译可执行程序。Windows 和 macOS 都从源码安装启动；若以后提供可执行程序，应分别在目标系统构建和验证。
+不包含硬件驱动或云端服务。Windows 和 macOS 可从源码安装启动；便携包分别在对应系统构建和验证，保留整个 Windows onedir 文件夹或 macOS `.app`，不能只复制其中的可执行文件。当前便携包目标为 Windows x64 与 macOS arm64，具体环境和验证结果见 [便携包说明](docs/portable.md)。
 
 ## 本机验证记录
+
+0.1.1 的质量改进在本机通过 **116 项非 GUI 测试**，修复了窄 NumPy 数值参数的采样数溢出、极大有限 FFT 输入的溢出、PNG 写入失败时覆盖旧文件，以及 GUI 忽略命令行预设的问题。输出路径错误现在返回清晰提示。Mac arm64 便携包已完成本机解压后自测；各平台最终分发产物的提交、SHA-256 与独立自测报告见对应 Actions artifact。便携包使用说明见 [下载、校验与启动](docs/portable.md)。
 
 在实际 macOS 上，Python 3.9.6 与隔离的 Python 3.12.15 均通过 **93 项数值/导出测试**。Python 3.12.15 / Tk 9.0.4 的完整 GUI smoke 通过三组预设切换、错误输入恢复、零信号未定义相位、CSV/PNG 导出、JSON 设置回读和取消对话框流程。测试使用临时文件及模拟的文件对话框，没有连接硬件。
 
