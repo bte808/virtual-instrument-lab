@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "data_kind": "synthetic_simulation_no_hardware",
+  "config": {
+    "sample_rate_hz": 2000.0,
+    "duration_s": 1.0,
+    "amplitude_v": 0.2,
+    "frequency_hz": 50.0,
+    "phase_deg": -45.0,
+    "dc_offset_v": 0.4,
+    "noise_std_v": 2.0,
+    "interference_amplitude_v": 0.6,
+    "interference_frequency_hz": 120.0,
+    "interference_phase_deg": 0.0,
+    "lowpass_cutoff_hz": 80.0,
+    "reference_frequency_hz": 50.0,
+    "lockin_cutoff_hz": 1.0,
+    "seed": 42
+  }
+}

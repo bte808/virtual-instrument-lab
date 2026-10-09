@@ -1,0 +1,249 @@
+{
+  "schema_version": 1,
+  "data_kind": "synthetic_simulation_no_hardware",
+  "app_version": "0.1.1",
+  "generation_command": "python scripts/tutorial_materials.py --write",
+  "program_source_hash_encoding": "UTF-8 with LF newlines",
+  "program_source_sha256": {
+    "core.py": "071e9e4d7439f4f7956b0d80ca0b04103c15b6d666f04c31a6577ca2a2181e6d",
+    "exports.py": "74511c66d634aa24b4244ea93a008d6fd1f0cafb122a381efa67d57414bfd63e",
+    "plotting.py": "c149cc24265809f088698402c88ee3c620ec618a790884b2a44eceab526a3362",
+    "__main__.py": "579738d79fb98a2dd6e9347ee7bec98fc5486122961ec9d79c6464adae4645d3"
+  },
+  "environment": {
+    "python": "3.12.15",
+    "system": "Darwin",
+    "machine": "arm64",
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "matplotlib": "3.11.2",
+    "rng": "PCG64"
+  },
+  "comparison_tolerances": {
+    "volts_atol": 1e-09,
+    "volts_rtol": 1e-08,
+    "phase_degrees_atol": 1e-06,
+    "seconds_atol": 1e-10
+  },
+  "cases": {
+    "clean_reference": {
+      "preset": "Clean reference",
+      "overrides": {},
+      "config": {
+        "sample_rate_hz": 2000.0,
+        "duration_s": 4.0,
+        "amplitude_v": 1.0,
+        "frequency_hz": 50.0,
+        "phase_deg": 30.0,
+        "dc_offset_v": 0.0,
+        "noise_std_v": 0.0,
+        "interference_amplitude_v": 0.0,
+        "interference_frequency_hz": 120.0,
+        "interference_phase_deg": 0.0,
+        "lowpass_cutoff_hz": 80.0,
+        "reference_frequency_hz": 50.0,
+        "lockin_cutoff_hz": 2.0,
+        "seed": 42
+      },
+      "metrics": {
+        "sample_count": 8000,
+        "last_sample_s": 3.9995,
+        "estimate_sample_count": 6408,
+        "estimate_start_s": 0.796,
+        "settling_time_s": 0.7957747154594768,
+        "settled": true,
+        "warnings": [],
+        "x_v": 0.8660133615285874,
+        "y_v": 0.4999928663314644,
+        "amplitude_peak_v": 0.9999860042662585,
+        "phase_deg": 29.999991015308836,
+        "mean_instantaneous_amplitude_v": 0.9999860448861019,
+        "main_bin_hz": 50.0,
+        "input_main_bin_peak_v": 1.0,
+        "filtered_main_bin_peak_v": 0.8483257715200045
+      },
+      "generation": "-m virtual_instrument_lab --headless --preset \"Clean reference\" --output-dir output/tutorial/clean_reference",
+      "figure": {
+        "sha256": "1d2644009809898d4399d23fe1e95e3ecbd69259e41ddd753edef3beb6859224",
+        "width": 1680,
+        "height": 1092,
+        "title": "SYNTHETIC SIMULATION DATA | NO HARDWARE CONNECTED\nR = 0.99999 V peak   Phase = 30.00 deg   |   Startup criterion met",
+        "footer": "Amber = startup < 0.796 s. Mean X/Y estimate starts at 0.796 s. Settling criterion does not guarantee accuracy."
+      }
+    },
+    "buried_in_noise": {
+      "preset": "Buried in noise",
+      "overrides": {},
+      "config": {
+        "sample_rate_hz": 2000.0,
+        "duration_s": 6.0,
+        "amplitude_v": 0.2,
+        "frequency_hz": 50.0,
+        "phase_deg": -45.0,
+        "dc_offset_v": 0.4,
+        "noise_std_v": 2.0,
+        "interference_amplitude_v": 0.6,
+        "interference_frequency_hz": 120.0,
+        "interference_phase_deg": 0.0,
+        "lowpass_cutoff_hz": 80.0,
+        "reference_frequency_hz": 50.0,
+        "lockin_cutoff_hz": 1.0,
+        "seed": 42
+      },
+      "metrics": {
+        "sample_count": 12000,
+        "last_sample_s": 5.9995,
+        "estimate_sample_count": 8816,
+        "estimate_start_s": 1.592,
+        "settling_time_s": 1.5915494309189535,
+        "settled": true,
+        "warnings": [],
+        "x_v": 0.09839591016828872,
+        "y_v": -0.16068341553921708,
+        "amplitude_peak_v": 0.1884168654000874,
+        "phase_deg": -58.51841236869785,
+        "mean_instantaneous_amplitude_v": 0.1969381385289149,
+        "main_bin_hz": 50.0,
+        "input_main_bin_peak_v": 0.19856028034959475,
+        "filtered_main_bin_peak_v": 0.1686439372100885
+      },
+      "generation": "-m virtual_instrument_lab --headless --preset \"Buried in noise\" --output-dir output/tutorial/buried_in_noise",
+      "figure": {
+        "sha256": "2076e4ba69c773f5f8af0c997e251d65fc8e5473376a69983b7d24d5863db119",
+        "width": 1680,
+        "height": 1092,
+        "title": "SYNTHETIC SIMULATION DATA | NO HARDWARE CONNECTED\nR = 0.18842 V peak   Phase = -58.52 deg   |   Startup criterion met",
+        "footer": "Amber = startup < 1.59 s. Mean X/Y estimate starts at 1.59 s. Settling criterion does not guarantee accuracy."
+      }
+    },
+    "nearby_interference": {
+      "preset": "Nearby interference",
+      "overrides": {},
+      "config": {
+        "sample_rate_hz": 2000.0,
+        "duration_s": 8.0,
+        "amplitude_v": 1.0,
+        "frequency_hz": 50.0,
+        "phase_deg": 60.0,
+        "dc_offset_v": 0.2,
+        "noise_std_v": 0.1,
+        "interference_amplitude_v": 0.8,
+        "interference_frequency_hz": 53.0,
+        "interference_phase_deg": -20.0,
+        "lowpass_cutoff_hz": 80.0,
+        "reference_frequency_hz": 50.0,
+        "lockin_cutoff_hz": 1.0,
+        "seed": 42
+      },
+      "metrics": {
+        "sample_count": 16000,
+        "last_sample_s": 7.9995,
+        "estimate_sample_count": 12816,
+        "estimate_start_s": 1.592,
+        "settling_time_s": 1.5915494309189535,
+        "settled": true,
+        "warnings": [],
+        "x_v": 0.4972913450036789,
+        "y_v": 0.8655777934493242,
+        "amplitude_peak_v": 0.9982602858614424,
+        "phase_deg": 60.12179126105045,
+        "mean_instantaneous_amplitude_v": 0.9998857953833507,
+        "main_bin_hz": 50.0,
+        "input_main_bin_peak_v": 0.9989899022694793,
+        "filtered_main_bin_peak_v": 0.8477718330904371
+      },
+      "generation": "-m virtual_instrument_lab --headless --preset \"Nearby interference\" --output-dir output/tutorial/nearby_interference",
+      "figure": {
+        "sha256": "45e366a929baf965c4f850c7e3ced97ac19494d87213cbffde790b5877f2e554",
+        "width": 1680,
+        "height": 1092,
+        "title": "SYNTHETIC SIMULATION DATA | NO HARDWARE CONNECTED\nR = 0.99826 V peak   Phase = 60.12 deg   |   Startup criterion met",
+        "footer": "Amber = startup < 1.59 s. Mean X/Y estimate starts at 1.59 s. Settling criterion does not guarantee accuracy."
+      }
+    },
+    "noise_short": {
+      "preset": "Buried in noise",
+      "overrides": {
+        "duration_s": 1.0
+      },
+      "config": {
+        "sample_rate_hz": 2000.0,
+        "duration_s": 1.0,
+        "amplitude_v": 0.2,
+        "frequency_hz": 50.0,
+        "phase_deg": -45.0,
+        "dc_offset_v": 0.4,
+        "noise_std_v": 2.0,
+        "interference_amplitude_v": 0.6,
+        "interference_frequency_hz": 120.0,
+        "interference_phase_deg": 0.0,
+        "lowpass_cutoff_hz": 80.0,
+        "reference_frequency_hz": 50.0,
+        "lockin_cutoff_hz": 1.0,
+        "seed": 42
+      },
+      "metrics": {
+        "sample_count": 2000,
+        "last_sample_s": 0.9995,
+        "estimate_sample_count": 400,
+        "estimate_start_s": 0.8,
+        "settling_time_s": 1.5915494309189535,
+        "settled": false,
+        "warnings": [
+          "Not fully settled: estimates use the final 20% and are provisional."
+        ],
+        "x_v": 0.12305983042968224,
+        "y_v": -0.15447532969030545,
+        "amplitude_peak_v": 0.1975002515145505,
+        "phase_deg": -51.458087579585985,
+        "mean_instantaneous_amplitude_v": 0.20046760117065993,
+        "main_bin_hz": 50.0,
+        "input_main_bin_peak_v": 0.23683433889553102,
+        "filtered_main_bin_peak_v": 0.19732681296854346
+      },
+      "generation": "simulate + save_settings + export_csv"
+    },
+    "nearby_mismatch": {
+      "preset": "Nearby interference",
+      "overrides": {
+        "reference_frequency_hz": 49.0
+      },
+      "config": {
+        "sample_rate_hz": 2000.0,
+        "duration_s": 8.0,
+        "amplitude_v": 1.0,
+        "frequency_hz": 50.0,
+        "phase_deg": 60.0,
+        "dc_offset_v": 0.2,
+        "noise_std_v": 0.1,
+        "interference_amplitude_v": 0.8,
+        "interference_frequency_hz": 53.0,
+        "interference_phase_deg": -20.0,
+        "lowpass_cutoff_hz": 80.0,
+        "reference_frequency_hz": 49.0,
+        "lockin_cutoff_hz": 1.0,
+        "seed": 42
+      },
+      "metrics": {
+        "sample_count": 16000,
+        "last_sample_s": 7.9995,
+        "estimate_sample_count": 12816,
+        "estimate_start_s": 1.592,
+        "settling_time_s": 1.5915494309189535,
+        "settled": true,
+        "warnings": [
+          "Reference frequency differs from the signal: quadratures rotate and averaging can reduce amplitude."
+        ],
+        "x_v": -0.004774528822855634,
+        "y_v": -0.02093373043712386,
+        "amplitude_peak_v": 0.02147131098685977,
+        "phase_deg": -102.84814519070032,
+        "mean_instantaneous_amplitude_v": 0.49965415354262976,
+        "main_bin_hz": 50.0,
+        "input_main_bin_peak_v": 0.9989899022694793,
+        "filtered_main_bin_peak_v": 0.8477718330904371
+      },
+      "generation": "simulate + save_settings + export_csv"
+    }
+  }
+}
