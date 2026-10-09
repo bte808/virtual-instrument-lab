@@ -4,6 +4,7 @@ import argparse
 import csv
 import hashlib
 import json
+import ntpath
 import os
 from pathlib import Path
 import platform
@@ -11,6 +12,26 @@ import subprocess
 import tarfile
 import tempfile
 import zipfile
+
+
+def isolated_environment(environment, output_root, system):
+    """Handle Windows' case-insensitive keys after environ becomes a dict."""
+    env = dict(environment)
+    system_root = next((value for key, value in env.items() if key.upper() == "SYSTEMROOT"), None)
+    remove = {"PYTHONPATH", "PYTHONHOME", "VIRTUAL_ENV", "TCL_LIBRARY", "TK_LIBRARY",
+              "MPLBACKEND", "PATH", "MPLCONFIGDIR", "PYTHONUTF8"}
+    for key in list(env):
+        if key.upper() in remove:
+            del env[key]
+    if system == "Windows":
+        if not system_root:
+            raise RuntimeError("Windows SystemRoot is missing; cannot isolate the runtime PATH")
+        env["PATH"] = ntpath.join(system_root, "System32")
+    else:
+        env["PATH"] = "/usr/bin:/bin"
+    env["MPLCONFIGDIR"] = str(output_root / "plot cache")
+    env["PYTHONUTF8"] = "1"
+    return env
 
 
 def main():
@@ -47,13 +68,7 @@ def main():
             raise RuntimeError("Archive build metadata does not match its sidecar")
         executable = (root / "VirtualInstrumentLab.app" / "Contents" / "MacOS" / "VirtualInstrumentLab"
                       if platform.system() == "Darwin" else root / "VirtualInstrumentLab" / "VirtualInstrumentLab.exe")
-        env = os.environ.copy()
-        for key in ("PYTHONPATH", "PYTHONHOME", "VIRTUAL_ENV", "TCL_LIBRARY", "TK_LIBRARY", "MPLBACKEND"):
-            env.pop(key, None)
-        env["PATH"] = (str(Path(env["SystemRoot"]) / "System32")
-                       if platform.system() == "Windows" else "/usr/bin:/bin")
-        env["MPLCONFIGDIR"] = str(root / "plot cache")
-        env["PYTHONUTF8"] = "1"
+        env = isolated_environment(os.environ, root, platform.system())
         def invoke(*arguments):
             result = subprocess.run([str(executable), *arguments], cwd=root, env=env,
                                     capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=90)
