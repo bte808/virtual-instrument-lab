@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "virtual-instrument-lab"
+version = "0.1.0"
+description = "Offline synthetic signal and dual-phase lock-in teaching lab"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [{name = "bte808"}]
+dependencies = ["numpy>=1.24,<3", "scipy>=1.10,<2", "matplotlib>=3.7,<4"]
+
+[project.optional-dependencies]
+test = ["pytest>=7.4,<9"]
+
+[project.scripts]
+virtual-instrument-lab = "virtual_instrument_lab.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["virtual_instrument_lab*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["gui: requires an available Tk desktop and VIL_RUN_GUI_TESTS=1"]
